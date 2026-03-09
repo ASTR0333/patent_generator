@@ -1,4 +1,4 @@
-﻿# patent-generator
+﻿# patent_generator
 
 Генератор патентной документации для программ ЭВМ.
 
