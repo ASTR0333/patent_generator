@@ -341,7 +341,7 @@ def _generate_docs(
 
     for idx, author in enumerate(authors):
         day, month, year = author["birthday"].split(".")
-        doc = DocxTemplate(str(TEMPLATES_DIR / "pril4_211 .docx"))
+        doc = DocxTemplate(str(TEMPLATES_DIR / "pril4_211.docx"))
         doc.render({
             "name": name,
             "fio_author": author["fio"],

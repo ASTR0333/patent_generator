@@ -270,7 +270,7 @@ class PatentApp:
             "pril1-211-2-1.docx",
             "pril1-211-2-2.docx",
             "pril3_211.docx",
-            "pril4_211 .docx"
+            "pril4_211.docx"
         ]
 
         missing_templates = []
@@ -787,7 +787,7 @@ class PatentApp:
         """Генерация приложения 4"""
         if len(authors) == 1:
             day, month, year = authors[0]["birthday"].split(".")
-            doc = DocxTemplate("templates/pril4_211 .docx")
+            doc = DocxTemplate("templates/pril4_211.docx")
             context = {
                 "name": program_name,
                 "fio_author": authors[0]["fio"],
@@ -801,7 +801,7 @@ class PatentApp:
         else:
             for idx, author in enumerate(authors, start=1):
                 day, month, year = author["birthday"].split(".")
-                doc = DocxTemplate("templates/pril4_211 .docx")
+                doc = DocxTemplate("templates/pril4_211.docx")
                 context = {
                     "name": program_name,
                     "fio_author": author["fio"],

@@ -482,7 +482,7 @@ def generate_pril4_211(name: str, authors: list[dict]):
     for idx, author in enumerate(authors):
         day, month, year = author["birthday"].split(".")
 
-        doc = DocxTemplate("templates/pril4_211 .docx")
+        doc = DocxTemplate("templates/pril4_211.docx")
         context = {
             "name": name,
             "fio_author": author["fio"],
