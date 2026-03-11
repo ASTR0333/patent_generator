@@ -215,12 +215,13 @@ async def generate(req: GenerateRequest) -> dict[str, Any]:
 
     nr = "?"
     ns = "?"
+    page_count_warning = None
     try:
         from generator import count_pages_exact
         nr = str(count_pages_exact(str(referat_path)))
         ns = str(count_pages_exact(source_code_out))
-    except RuntimeError:
-        pass  # non-Windows environment
+    except (RuntimeError, Exception) as e:
+        page_count_warning = f"Не удалось подсчитать количество страниц: {str(e)}"
 
     # Monkey-patch count_pages_exact return for generate_pril1_211_1
     # We pass pre-resolved paths to avoid the CLI file-exists check
@@ -246,7 +247,11 @@ async def generate(req: GenerateRequest) -> dict[str, Any]:
     # Only return files that were actually created
     existing = [f for f in generated if (OUTPUT_DIR / f).exists()]
 
-    return {"files": existing}
+    response = {"files": existing}
+    if page_count_warning:
+        response["warning"] = page_count_warning
+    
+    return response
 
 
 def _generate_docs(

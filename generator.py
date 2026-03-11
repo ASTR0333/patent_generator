@@ -279,13 +279,19 @@ with open(r"{temp_output_path}", "w") as f:
             # Read the result from JSON file
             if os.path.exists(temp_output_path):
                 with open(temp_output_path, 'r') as f:
-                    data = json.load(f)
-                    if "pages" in data:
-                        pages = data["pages"]
-                        if isinstance(pages, int):
-                            return pages
-                        else:
-                            raise RuntimeError(f"LibreOffice API error: {pages}")
+                    content = f.read().strip()
+                    if not content:
+                        raise RuntimeError("LibreOffice returned empty result")
+                    try:
+                        data = json.loads(content)
+                        if "pages" in data:
+                            pages = data["pages"]
+                            if isinstance(pages, int):
+                                return pages
+                            else:
+                                raise RuntimeError(f"LibreOffice API error: {pages}")
+                    except json.JSONDecodeError as e:
+                        raise RuntimeError(f"Invalid JSON from LibreOffice: {e}. Content: {content}")
             
             raise RuntimeError("Failed to get page count from LibreOffice")
         

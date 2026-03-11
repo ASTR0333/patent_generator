@@ -84,7 +84,11 @@ export default function App() {
       }
       const { data } = await axios.post(`${API}/generate`, payload)
       setGeneratedFiles(data.files)
-      setStatus({ type: 'success', msg: `Готово! Сгенерировано ${data.files.length} файл(ов).` })
+      let msg = `Готово! Сгенерировано ${data.files.length} файл(ов).`
+      if (data.warning) {
+        msg += `\n⚠️ ${data.warning}`
+      }
+      setStatus({ type: 'success', msg })
     } catch (e) {
       const detail = e.response?.data?.detail || e.message
       setStatus({ type: 'error', msg: detail })
