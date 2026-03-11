@@ -21,11 +21,6 @@ try:
 except ImportError:
     HAS_PY7ZR = False
 
-# pip install python-docx
-# pip install docxtpl
-# pip install rarfile (optional, for .rar support)
-# pip install py7zr (optional, for .7z support)
-
 CODE_EXTENSIONS = {
     ".py", ".js", ".ts", ".jsx", ".tsx", ".java", ".c", ".cpp", ".h", ".hpp",
     ".cs", ".go", ".rs", ".rb", ".php", ".swift", ".kt", ".kts", ".scala",
@@ -35,7 +30,7 @@ CODE_EXTENSIONS = {
     ".groovy", ".v", ".sv", ".vhdl", ".asm", ".s", ".bat", ".ps1",
 }
 
-SPECIAL_FILENAMES= {"dockerfile", "makefile", "gemfile", "rakefile", "vagrantfile"}
+SPECIAL_FILENAMES = {"dockerfile", "makefile", "gemfile", "rakefile", "vagrantfile"}
 
 
 def validate_input(prompt: str, pattern: str, error_message: str) -> str:
@@ -93,7 +88,6 @@ PATTERNS = {
         "СНИЛС должен содержать ровно 11 цифр"
     ),
     "birthday": (
-        # Note: regex validates format only; calendar logic (e.g. Feb 31) is not checked.
         r"(0[1-9]|[12]\d|3[01])\.(0[1-9]|1[0-2])\.(19|20)\d{2}",
         "Дата рождения должна быть в формате: ДД.ММ.ГГГГ"
     ),
@@ -208,106 +202,127 @@ def read_code_from_path(path: str, output_dir: str = "output") -> str:
     )
 
 
-def count_pages_exact(filepath: str) -> int:
+def count_pages_via_pdf_conversion(filepath: str) -> int:
+    """
+    Подсчет страниц через конвертацию в PDF и анализ PDF-файла
+    
+    Args:
+        filepath: Путь к документу
+        
+    Returns:
+        Количество страниц
+        
+    Raises:
+        RuntimeError: Если не удалось подсчитать страницы
+    """
     filepath = os.path.abspath(filepath)
     
-    # Create a temporary JSON file for output
-    temp_output = tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False)
-    temp_output_path = temp_output.name
-    temp_output.close()
+    if not os.path.exists(filepath):
+        raise RuntimeError(f"Файл не найден: {filepath}")
     
-    try:
-        # Create a temporary Python script for LibreOffice UNO
-        temp_script = tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False)
-        script_path = temp_script.name
-        
-        script_content = f'''
-import uno
-from com.sun.star.beans import PropertyValue
-import json
-import sys
-
-def get_page_count(doc_path):
-    """Get page count from a document using LibreOffice UNO API"""
-    try:
-        local_context = uno.getComponentContext()
-        resolver = local_context.ServiceManager.createInstanceWithContext(
-            "com.sun.star.bridge.UnoUrlResolver", local_context)
-        
-        ctx = resolver.resolve(
-            "uno:socket,host=localhost,port=2002;urp;StarOffice.ComponentContext")
-        smgr = ctx.ServiceManager
-        desktop = smgr.createInstanceWithContext("com.sun.star.frame.Desktop", ctx)
-        
-        url = uno.systemPathToFileUrl(doc_path)
-        doc = desktop.loadComponentFromURL(url, "_blank", 0, ())
-        
-        pages = doc.getImplementation().getPageCount()
-        
-        doc.close(True)
-        
-        return pages
-    except Exception as e:
-        return {{"error": str(e)}}
-
-result = get_page_count(r"{filepath}")
-with open(r"{temp_output_path}", "w") as f:
-    json.dump({{"pages": result}}, f)
-'''
-        
-        temp_script.write(script_content)
-        temp_script.close()
-        
-        # Start LibreOffice in headless mode with UNO socket listener
-        lo_process = subprocess.Popen(
-            ["libreoffice", "--headless", "--accept=socket,host=localhost,port=2002;urp;"],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL
-        )
-        
-        # Wait for LibreOffice to start
-        time.sleep(3)
-        
+    # Создаем временную директорию для конвертации
+    with tempfile.TemporaryDirectory() as temp_dir:
         try:
-            # Run the UNO script
-            result = subprocess.run(
-                ["python3", script_path],
-                capture_output=True,
-                timeout=30
-            )
+            # Конвертируем документ в PDF
+            result = subprocess.run([
+                "libreoffice", "--headless", "--convert-to", "pdf",
+                "--outdir", temp_dir, filepath
+            ], capture_output=True, text=True, timeout=60)
             
-            # Read the result from JSON file
-            if os.path.exists(temp_output_path):
-                with open(temp_output_path, 'r') as f:
-                    content = f.read().strip()
-                    if not content:
-                        raise RuntimeError("LibreOffice returned empty result")
-                    try:
-                        data = json.loads(content)
-                        if "pages" in data:
-                            pages = data["pages"]
-                            if isinstance(pages, int):
-                                return pages
-                            else:
-                                raise RuntimeError(f"LibreOffice API error: {pages}")
-                    except json.JSONDecodeError as e:
-                        raise RuntimeError(f"Invalid JSON from LibreOffice: {e}. Content: {content}")
+            if result.returncode != 0:
+                error_msg = result.stderr or result.stdout or "Неизвестная ошибка"
+                raise RuntimeError(f"Ошибка конвертации в PDF: {error_msg}")
             
-            raise RuntimeError("Failed to get page count from LibreOffice")
-        
-        finally:
-            lo_process.terminate()
+            # Ищем сконвертированный PDF
+            base_name = os.path.splitext(os.path.basename(filepath))[0]
+            pdf_path = os.path.join(temp_dir, f"{base_name}.pdf")
+            
+            if not os.path.exists(pdf_path):
+                # Возможно, LibreOffice создал файл с другим именем
+                pdf_files = [f for f in os.listdir(temp_dir) if f.endswith('.pdf')]
+                if not pdf_files:
+                    raise RuntimeError("PDF файл не был создан")
+                pdf_path = os.path.join(temp_dir, pdf_files[0])
+            
+            # Пробуем получить количество страниц через pdfinfo (poppler-utils)
             try:
-                lo_process.wait(timeout=5)
-            except subprocess.TimeoutExpired:
-                lo_process.kill()
+                pdfinfo_result = subprocess.run(
+                    ["pdfinfo", pdf_path],
+                    capture_output=True, text=True, timeout=10
+                )
+                
+                if pdfinfo_result.returncode == 0:
+                    for line in pdfinfo_result.stdout.split('\n'):
+                        if line.startswith('Pages:'):
+                            return int(line.split(':')[1].strip())
+            except (FileNotFoundError, subprocess.TimeoutExpired, ValueError):
+                # pdfinfo не установлен или не сработал
+                pass
+            
+            # Альтернативный метод: подсчет страниц через анализ PDF структуры
+            try:
+                with open(pdf_path, 'rb') as f:
+                    content = f.read()
+                    # Ищем маркеры страниц в PDF
+                    pages = content.count(b'/Type/Page')
+                    if pages > 0:
+                        return pages
+            except Exception:
+                pass
+            
+            # Еще один метод: через qpdf или pdftk если они установлены
+            try:
+                qpdf_result = subprocess.run(
+                    ["qpdf", "--show-npages", pdf_path],
+                    capture_output=True, text=True, timeout=10
+                )
+                if qpdf_result.returncode == 0 and qpdf_result.stdout.strip().isdigit():
+                    return int(qpdf_result.stdout.strip())
+            except (FileNotFoundError, subprocess.TimeoutExpired):
+                pass
+            
+            # Если ничего не сработало, пробуем через количество объектов в PDF
+            try:
+                with open(pdf_path, 'rb') as f:
+                    content = f.read()
+                    # Грубая оценка через количество объектов /Page
+                    pages = len(re.findall(rb'/Type\s*/Page', content))
+                    if pages > 0:
+                        return pages
+            except Exception:
+                pass
+            
+            raise RuntimeError("Не удалось определить количество страниц в PDF")
+            
+        except subprocess.TimeoutExpired:
+            raise RuntimeError("Превышен таймаут при конвертации документа (60 секунд)")
+        except Exception as e:
+            raise RuntimeError(f"Ошибка при подсчете страниц: {str(e)}")
+
+
+def count_pages_exact(filepath: str) -> int:
+    """
+    Подсчет страниц в документе (основная функция)
     
-    finally:
-        # Clean up temp files
-        if os.path.exists(script_path):
-            os.unlink(script_path)
-        if os.path.exists(temp_output_path):
-            os.unlink(temp_output_path)
+    Args:
+        filepath: Путь к документу
+        
+    Returns:
+        Количество страниц
+        
+    Raises:
+        RuntimeError: Если не удалось подсчитать страницы
+    """
+    # Проверяем наличие LibreOffice
+    try:
+        subprocess.run(["libreoffice", "--version"], capture_output=True, check=True)
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        raise RuntimeError(
+            "LibreOffice не установлен. Выполните: sudo apt install libreoffice"
+        )
+    
+    # Подсчитываем страницы
+    return count_pages_via_pdf_conversion(filepath)
 
 
 def input_author(index: int) -> dict:
@@ -389,7 +404,10 @@ def generate_pril1_211_1(name: str, quantity_of_authors: int, authors: list[dict
         "Положите файл реферата в папку output и напишите его название (формат: name.docx):\n"
     )
 
-    nr = str(count_pages_exact(f"output/{file_ref}"))
+    print("Подсчет страниц в реферате...")
+    nr = str(count_pages_exact(os.path.join("output", file_ref)))
+    
+    print("Подсчет страниц в исходном коде...")
     ns = str(count_pages_exact("output/source-code.docx"))
 
     doc = DocxTemplate("templates/pril1-211-1-1.docx")
@@ -499,6 +517,9 @@ def generate_pril4_211(name: str, authors: list[dict]):
 
 
 def main():
+    # Создаем директорию output если её нет
+    os.makedirs("output", exist_ok=True)
+    
     name = input("Введите название программы для ЭВМ: ").strip()
     if not name:
         print("Ошибка: название программы не может быть пустым.")
@@ -508,11 +529,16 @@ def main():
     authors = [input_author(i) for i in range(quantity_of_authors)]
     fio_of_authors = build_fio_string(authors)
 
+    print("\nГенерация исходного кода...")
     generate_source_code(name, fio_of_authors)
+    
+    print("Генерация приложений...")
     generate_pril1_211_1(name, quantity_of_authors, authors)
     generate_pril1_211_2(name, quantity_of_authors, authors)
     generate_pril3_211(name, authors)
     generate_pril4_211(name, authors)
+    
+    print("\nГотово! Все файлы сохранены в папке 'output'.")
 
 
 if __name__ == "__main__":
