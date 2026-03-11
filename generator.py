@@ -5,12 +5,9 @@ import shutil
 import tarfile
 import tempfile
 import zipfile
-
-try:
-    import win32com.client
-    HAS_WIN32 = True
-except ImportError:
-    HAS_WIN32 = False
+import subprocess
+import time
+import json
 
 try:
     import rarfile
@@ -26,7 +23,6 @@ except ImportError:
 
 # pip install python-docx
 # pip install docxtpl
-# pip install pywin32 (Windows only)
 # pip install rarfile (optional, for .rar support)
 # pip install py7zr (optional, for .7z support)
 
@@ -213,21 +209,99 @@ def read_code_from_path(path: str, output_dir: str = "output") -> str:
 
 
 def count_pages_exact(filepath: str) -> int:
-    if not HAS_WIN32:
-        raise RuntimeError(
-            "pywin32 недоступен (требуется Windows). "
-            "Подсчёт страниц не поддерживается на данной платформе."
-        )
     filepath = os.path.abspath(filepath)
-    word = win32com.client.Dispatch("Word.Application")
-    word.Visible = False
+    
+    # Create a temporary JSON file for output
+    temp_output = tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False)
+    temp_output_path = temp_output.name
+    temp_output.close()
+    
     try:
-        doc = word.Documents.Open(filepath)
-        pages = doc.ComputeStatistics(2)
-        doc.Close(False)
+        # Create a temporary Python script for LibreOffice UNO
+        temp_script = tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False)
+        script_path = temp_script.name
+        
+        script_content = f'''
+import uno
+from com.sun.star.beans import PropertyValue
+import json
+import sys
+
+def get_page_count(doc_path):
+    """Get page count from a document using LibreOffice UNO API"""
+    try:
+        local_context = uno.getComponentContext()
+        resolver = local_context.ServiceManager.createInstanceWithContext(
+            "com.sun.star.bridge.UnoUrlResolver", local_context)
+        
+        ctx = resolver.resolve(
+            "uno:socket,host=localhost,port=2002;urp;StarOffice.ComponentContext")
+        smgr = ctx.ServiceManager
+        desktop = smgr.createInstanceWithContext("com.sun.star.frame.Desktop", ctx)
+        
+        url = uno.systemPathToFileUrl(doc_path)
+        doc = desktop.loadComponentFromURL(url, "_blank", 0, ())
+        
+        pages = doc.getImplementation().getPageCount()
+        
+        doc.close(True)
+        
         return pages
+    except Exception as e:
+        return {{"error": str(e)}}
+
+result = get_page_count(r"{filepath}")
+with open(r"{temp_output_path}", "w") as f:
+    json.dump({{"pages": result}}, f)
+'''
+        
+        temp_script.write(script_content)
+        temp_script.close()
+        
+        # Start LibreOffice in headless mode with UNO socket listener
+        lo_process = subprocess.Popen(
+            ["libreoffice", "--headless", "--accept=socket,host=localhost,port=2002;urp;"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL
+        )
+        
+        # Wait for LibreOffice to start
+        time.sleep(3)
+        
+        try:
+            # Run the UNO script
+            result = subprocess.run(
+                ["python3", script_path],
+                capture_output=True,
+                timeout=30
+            )
+            
+            # Read the result from JSON file
+            if os.path.exists(temp_output_path):
+                with open(temp_output_path, 'r') as f:
+                    data = json.load(f)
+                    if "pages" in data:
+                        pages = data["pages"]
+                        if isinstance(pages, int):
+                            return pages
+                        else:
+                            raise RuntimeError(f"LibreOffice API error: {pages}")
+            
+            raise RuntimeError("Failed to get page count from LibreOffice")
+        
+        finally:
+            lo_process.terminate()
+            try:
+                lo_process.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                lo_process.kill()
+    
     finally:
-        word.Quit()
+        # Clean up temp files
+        if os.path.exists(script_path):
+            os.unlink(script_path)
+        if os.path.exists(temp_output_path):
+            os.unlink(temp_output_path)
 
 
 def input_author(index: int) -> dict:
