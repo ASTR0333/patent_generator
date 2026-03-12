@@ -176,7 +176,7 @@ export default function App() {
         <div className="mx-auto max-w-3xl flex flex-col gap-6 p-4 border-x border-neutral-100 min-h-screen">
             <div className="flex items-center gap-2">
                 <RiFileAiFill size={12} />
-                <h1 className="font-bold text-sm">Patent Generator</h1>
+                <h1 className="font-bold text-sm">Генератор патентной документации для программ ЭВМ</h1>
             </div>
 
             {/* Program name */}
@@ -192,7 +192,7 @@ export default function App() {
                     type="text"
                     value={programName}
                     onChange={(e) => setProgramName(e.target.value)}
-                    placeholder="Система управления складом"
+                    placeholder="Программа для ЭВМ"
                     className="text-3xl outline-none placeholder-neutral-200"
                 />
             </div>
