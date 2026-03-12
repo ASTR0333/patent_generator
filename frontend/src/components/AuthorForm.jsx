@@ -107,7 +107,7 @@ export function AuthorForm({ index, author, onChange, onRemove, canRemove }) {
                 {canRemove && (
                     <button
                         onClick={() => onRemove(index)}
-                        className="text-neutral-400 hover:text-neutral-700 transition"
+                        className="cursor-pointer text-neutral-400 hover:text-neutral-700 transition"
                     >
                         <RiDeleteBin6Line size={16} />
                     </button>

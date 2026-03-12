@@ -220,7 +220,7 @@ export default function App() {
                         />
                     ))}
                 </div>
-                <button className="bg-neutral-100 border-l-2 border-neutral-200 p-3 rounded-md outline-none focus:ring-2 ring-neutral-50 font-medium flex items-center gap-2" onClick={addAuthor}>
+                <button className="cursor-pointer bg-neutral-100 border-l-2 border-neutral-200 p-3 rounded-md outline-none focus:ring-2 ring-neutral-50 font-medium flex items-center gap-2" onClick={addAuthor}>
                     <RiUserAddFill size={16} />
                     Добавить автора
                 </button>
@@ -274,7 +274,7 @@ export default function App() {
             )}
 
             <button
-                className={`bg-neutral-100 outline-none ring-neutral-50 focus:ring-2 rounded-full p-4 font-medium flex items-center justify-center gap-2 ${loading ? "disabled:animate-pulse" : "disabled:opacity-25"}`}
+                className={`cursor-pointer bg-neutral-100 outline-none ring-neutral-50 focus:ring-2 rounded-full p-4 font-medium flex items-center justify-center gap-2 ${loading ? "disabled:animate-pulse" : "disabled:opacity-25"}`}
                 onClick={handleGenerate}
                 disabled={!canGenerate || loading}
                 title={
@@ -293,7 +293,7 @@ export default function App() {
                     <div className="font-bold text-xs">
                         Результат
                     </div>
-                    <button onClick={downloadArchive} className="flex items-center gap-1 text-neutral-900 font-medium text-sm px-2 py-1 bg-neutral-50 rounded-lg text-start">
+                    <button onClick={downloadArchive} className="cursor-pointer flex items-center gap-1 text-neutral-900 font-medium text-sm px-2 py-1 bg-neutral-50 rounded-lg text-start">
                         <RiFileWordLine size={14} />
                         <span className="flex-1">
                             {generatedFiles.archive_filename}
