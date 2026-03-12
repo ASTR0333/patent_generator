@@ -349,6 +349,7 @@ def _generate_docs(
             "d_a": day,
             "m_a": month,
             "y_a": year,
+            "skill_author": author["skill"],
         })
         if len(authors) == 1:
             doc.save(str(OUTPUT_DIR / "pril4_211.docx"))

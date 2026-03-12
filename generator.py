@@ -508,6 +508,7 @@ def generate_pril4_211(name: str, authors: list[dict]):
             "d_a": day,
             "m_a": month,
             "y_a": year,
+            "skill_author": author["skill"],
         }
         doc.render(context)
         if len(authors) == 1:
