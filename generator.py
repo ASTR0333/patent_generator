@@ -420,7 +420,7 @@ def generate_pril1_211_1(name: str, quantity_of_authors: int, authors: list[dict
         "email_author1": author1["email"],
         "inn_author1": author1["inn"],
         "passport_author1": passport_series_number,
-        "skils_author1": author1["snils"],
+        "snils_author1": author1["snils"],
     }
     doc.render(context)
     doc.save("output/pril1-211-1-1.docx")
