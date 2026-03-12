@@ -278,7 +278,7 @@ def _generate_docs(
         "email_author1": author1["email"],
         "inn_author1": author1["inn"],
         "passport_author1": passport_series_number,
-        "skils_author1": author1["snils"],
+        "snils_author1": author1["snils"],
     })
     doc.save(str(OUTPUT_DIR / "pril1-211-1-1.docx"))
 
