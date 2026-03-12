@@ -13,6 +13,7 @@ import shutil
 import sys
 import tempfile
 import uuid
+import zipfile
 from pathlib import Path
 from typing import Any
 
@@ -107,6 +108,15 @@ def _output_path(filename: str) -> Path:
     return target
 
 
+def _remove_uuid_prefix(filename: str) -> str:
+    """Remove UUID prefix from filename if present (format: {32_hex_chars}_{original_name})."""
+    if len(filename) > 33 and filename[32] == '_':
+        # Check if first 32 chars are hex
+        if all(c in '0123456789abcdef' for c in filename[:32]):
+            return filename[33:]
+    return filename
+
+
 # ---------------------------------------------------------------------------
 # /api/upload-source
 # ---------------------------------------------------------------------------
@@ -171,7 +181,7 @@ async def upload_referat(file: UploadFile = File(...)) -> dict[str, Any]:
 
 @app.post("/api/generate")
 async def generate(req: GenerateRequest) -> dict[str, Any]:
-    """Generate all patent documents and return their filenames."""
+    """Generate all patent documents and return as a single ZIP archive."""
     if not req.name.strip():
         raise HTTPException(status_code=400, detail="Название программы не может быть пустым.")
 
@@ -244,10 +254,48 @@ async def generate(req: GenerateRequest) -> dict[str, Any]:
             generated.append(f"pril3_211_author{i}.docx")
             generated.append(f"pril4_211_author{i}.docx")
 
-    # Only return files that were actually created
+    # Only include files that were actually created
     existing = [f for f in generated if (OUTPUT_DIR / f).exists()]
 
-    response = {"files": existing}
+    # Create ZIP archive with clean name (no UUID)
+    archive_name = f"{req.name.replace(' ', '_')}_package.zip"
+    archive_path = OUTPUT_DIR / archive_name
+    
+    # If archive already exists, add timestamp to avoid overwriting
+    counter = 1
+    while archive_path.exists():
+        base_name = f"{req.name.replace(' ', '_')}_package"
+        archive_path = OUTPUT_DIR / f"{base_name}_{counter}.zip"
+        counter += 1
+    
+    with zipfile.ZipFile(str(archive_path), 'w') as zf:
+        # Add all generated patent documents
+        for filename in existing:
+            file_path = OUTPUT_DIR / filename
+            zf.write(str(file_path), filename)
+        
+        # Add referat file - remove UUID prefix if present
+        referat_full_name = os.path.basename(str(referat_path))
+        referat_clean_name = _remove_uuid_prefix(referat_full_name)
+        zf.write(str(referat_path), f"referat/{referat_clean_name}")
+        
+        # Add source code files (from archive or single file)
+        if is_archive_file(str(source_path)):
+            tmp_dir = tempfile.mkdtemp()
+            try:
+                extract_archive(str(source_path), tmp_dir)
+                code_files = collect_code_files(tmp_dir)
+                for code_file in code_files:
+                    rel_name = os.path.relpath(code_file, tmp_dir)
+                    zf.write(code_file, f"source_code/{rel_name}")
+            finally:
+                shutil.rmtree(tmp_dir, ignore_errors=True)
+        else:
+            source_full_name = os.path.basename(str(source_path))
+            source_clean_name = _remove_uuid_prefix(source_full_name)
+            zf.write(str(source_path), f"source_code/{source_clean_name}")
+
+    response = {"archive_filename": archive_path.name}
     if page_count_warning:
         response["warning"] = page_count_warning
     

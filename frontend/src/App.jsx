@@ -65,7 +65,7 @@ export default function App() {
     const [authors, setAuthors] = useState([{ ...EMPTY_AUTHOR }]);
     const [sourceFile, setSourceFile] = useState(null); // { name, serverName }
     const [referatFile, setReferatFile] = useState(null); // { name, serverName }
-    const [generatedFiles, setGeneratedFiles] = useState([]);
+    const [generatedFiles, setGeneratedFiles] = useState({}); // { archive_filename, warning? }
     const [status, setStatus] = useState(null); // { type: 'error'|'success'|'info', msg }
     const [loading, setLoading] = useState(false);
 
@@ -149,8 +149,8 @@ export default function App() {
                 referat_file: referatFile.serverName,
             };
             const { data } = await axios.post(`${API}/generate`, payload);
-            setGeneratedFiles(data.files);
-            let msg = `Готово! Сгенерировано ${data.files.length} файл(ов).`;
+            setGeneratedFiles(data);
+            let msg = "Готово! Архив с документами создан.";
             if (data.warning) {
                 msg += `\n⚠️ ${data.warning}`;
             }
@@ -169,6 +169,12 @@ export default function App() {
             `${API}/download/${encodeURIComponent(filename)}`,
             "_blank",
         );
+    };
+
+    const downloadArchive = () => {
+        if (generatedFiles.archive_filename) {
+            download(generatedFiles.archive_filename);
+        }
     };
 
     // ── Render ───────────────────────────────────────────────────────────────
@@ -282,20 +288,18 @@ export default function App() {
             </button>
 
             {/* Generated files */}
-            {generatedFiles.length > 0 && (
+            {generatedFiles.archive_filename && (
                 <div className="flex flex-col gap-2 rounded-md pl-3 border-l-2 border-neutral-200 py-2">
                     <div className="font-bold text-xs">
-                        Сгенерированные файлы
+                        Результат
                     </div>
-                    {generatedFiles.map((f) => (
-                        <button onClick={() => download(f)} className="flex items-center gap-1 text-neutral-900 font-medium text-sm px-2 py-1 bg-neutral-50 rounded-lg text-start" key={f}>
-                            <RiFileWordLine size={14} />
-                            <span className="flex-1">
-                                {f}
-                            </span>
-                            <RiDownload2Fill size={14} />
-                        </button>
-                    ))}
+                    <button onClick={downloadArchive} className="flex items-center gap-1 text-neutral-900 font-medium text-sm px-2 py-1 bg-neutral-50 rounded-lg text-start">
+                        <RiFileWordLine size={14} />
+                        <span className="flex-1">
+                            {generatedFiles.archive_filename}
+                        </span>
+                        <RiDownload2Fill size={14} />
+                    </button>
                 </div>
             )}
         </div>
