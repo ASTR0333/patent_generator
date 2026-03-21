@@ -8,11 +8,11 @@ export function FileUpload({
 }) {
     return (
         <label
-            className="flex-1 border-2 border-neutral-300 border-dashed rounded-2xl p-4 flex flex-col gap-1"
+            className="flex flex-1 flex-col gap-1 rounded-2xl border-2 border-dashed p-4 bg-[var(--app-bg)] border-[var(--app-border-strong)]"
         >
-            <Icon className="text-neutral-800 mb-1" size={24} />
-            <span className="font-medium text-neutral-800">{label}</span>
-            {hint && <div className="text-xs text-neutral-400">{hint}</div>}
+            <Icon className="mb-1 text-[var(--app-icon)]" size={24} />
+            <span className="font-medium text-[var(--app-text)]">{label}</span>
+            {hint && <div className="text-xs text-[var(--app-text-soft)]">{hint}</div>}
             <div className="file-upload-box">
                 <span className={`file-name ${uploadedName ? "ok" : ""}`}>
                     {uploadedName || ""}

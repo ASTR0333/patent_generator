@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { RiCheckFill, RiFileAiFill, RiFileCodeLine, RiFileWordLine, RiUserAddFill, RiErrorWarningFill, RiDownload2Fill } from "@remixicon/react";
 import axios from "axios";
 import {
@@ -8,7 +8,7 @@ import {
 } from "./components/AuthorForm.jsx";
 import { FileUpload } from "./components/FileUpload.jsx";
 
-const API = "https://patent.ikb-mirea.ru/api";
+const API = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
 
 const SOURCE_ACCEPT = [
     ".py",
@@ -60,7 +60,21 @@ const SOURCE_ACCEPT = [
     ".7z",
 ].join(",");
 
+const THEME_KEY = "patent-generator-theme";
+
 export default function App() {
+    const [theme, setTheme] = useState(() => {
+        if (typeof window === "undefined") return "light";
+
+        const savedTheme = window.localStorage.getItem(THEME_KEY);
+        if (savedTheme === "light" || savedTheme === "dark") {
+            return savedTheme;
+        }
+
+        return window.matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light";
+    });
     const [programName, setProgramName] = useState("");
     const [authors, setAuthors] = useState([{ ...EMPTY_AUTHOR }]);
     const [sourceFile, setSourceFile] = useState(null); // { name, serverName }
@@ -68,6 +82,11 @@ export default function App() {
     const [generatedFiles, setGeneratedFiles] = useState({}); // { archive_filename, warning? }
     const [status, setStatus] = useState(null); // { type: 'error'|'success'|'info', msg }
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        document.documentElement.dataset.theme = theme;
+        window.localStorage.setItem(THEME_KEY, theme);
+    }, [theme]);
 
     // ── Author management ────────────────────────────────────────────────────
     const handleAuthorChange = (idx, field, value) => {
@@ -179,16 +198,31 @@ export default function App() {
 
     // ── Render ───────────────────────────────────────────────────────────────
     return (
-        <div className="mx-auto max-w-3xl flex flex-col gap-6 p-4 border-x border-neutral-100 min-h-screen">
-            <div className="flex items-center gap-2">
-                <RiFileAiFill size={12} />
-                <h1 className="font-bold text-sm">Генератор патентной документации для программ ЭВМ</h1>
+        <div className="mx-auto max-w-3xl flex min-h-screen flex-col gap-6 border-x p-4 bg-[var(--app-bg)] border-[var(--app-border)] text-[var(--app-text)] transition-colors">
+            <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                    <RiFileAiFill size={12} className="text-[var(--app-icon)]" />
+                    <h1 className="font-bold text-sm">Генератор патентной документации для программ ЭВМ</h1>
+                </div>
+                <button
+                    type="button"
+                    onClick={() =>
+                        setTheme((current) =>
+                            current === "dark" ? "light" : "dark",
+                        )
+                    }
+                    className="cursor-pointer rounded-full border px-3 py-1.5 text-xs font-medium uppercase tracking-wide outline-none transition-colors border-[var(--app-border-strong)] bg-[var(--app-surface)] text-[var(--app-text-muted)] focus:ring-2 ring-[var(--app-ring)]"
+                    aria-label="Переключить тему"
+                    title="Переключить тему"
+                >
+                    {theme === "dark" ? "Светлая тема" : "Темная тема"}
+                </button>
             </div>
 
             {/* Program name */}
             <div className="flex flex-col gap-3">
                 <label
-                    className="font-bold text-sm uppercase text-neutral-700"
+                    className="font-bold text-sm uppercase text-[var(--app-text-muted)]"
                     htmlFor="progname"
                 >
                     Название программы для ЭВМ *
@@ -199,13 +233,13 @@ export default function App() {
                     value={programName}
                     onChange={(e) => setProgramName(e.target.value)}
                     placeholder="Программа для ЭВМ"
-                    className="text-3xl outline-none placeholder-neutral-200"
+                    className="text-3xl outline-none text-[var(--app-text)] placeholder-[var(--app-placeholder)]"
                 />
             </div>
 
             {/* Authors */}
             <div className="flex flex-col gap-3">
-                <h3 className="font-bold text-sm uppercase text-neutral-700">
+                <h3 className="font-bold text-sm uppercase text-[var(--app-text-muted)]">
                     Авторы
                 </h3>
                 <div className="flex flex-col gap-3">
@@ -220,7 +254,7 @@ export default function App() {
                         />
                     ))}
                 </div>
-                <button className="cursor-pointer bg-neutral-100 border-l-2 border-neutral-200 p-3 rounded-md outline-none focus:ring-2 ring-neutral-50 font-medium flex items-center gap-2" onClick={addAuthor}>
+                <button className="cursor-pointer rounded-md border-l-2 p-3 outline-none focus:ring-2 font-medium flex items-center gap-2 bg-[var(--app-surface)] border-[var(--app-border-strong)] text-[var(--app-text)] ring-[var(--app-ring)]" onClick={addAuthor}>
                     <RiUserAddFill size={16} />
                     Добавить автора
                 </button>
@@ -228,10 +262,10 @@ export default function App() {
 
             {/* Files */}
             <div className="flex flex-col gap-3">
-                <h3 className="font-bold text-sm uppercase text-neutral-700">
+                <h3 className="font-bold text-sm uppercase text-[var(--app-text-muted)]">
                     Файлы
                 </h3>
-                <div className="flex gap-3">
+                <div className="flex gap-3 max-md:flex-col">
                     <FileUpload
                         label="Файл исходного кода *"
                         accept={SOURCE_ACCEPT}
@@ -251,12 +285,12 @@ export default function App() {
                 </div>
                 {/* Archive preview */}
                 {sourceFile?.codeFiles?.length > 0 && (
-                    <div className="flex flex-col gap-2 rounded-md pl-3 border-l-2 border-neutral-200 py-2">
+                    <div className="flex flex-col gap-2 rounded-md pl-3 border-l-2 py-2 border-[var(--app-border-strong)]">
                         <div className="font-bold text-xs">
                             Файлы с кодом в архиве:
                         </div>
                         {sourceFile.codeFiles.map((f) => (
-                            <div className="flex items-center gap-1 text-neutral-900 font-medium text-sm px-2 py-1 bg-neutral-50 rounded-lg" key={f}>
+                            <div className="flex items-center gap-1 rounded-lg px-2 py-1 font-medium text-sm bg-[var(--app-surface)] text-[var(--app-text)]" key={f}>
                                 <RiFileCodeLine size={14} />
                                 {f}
                             </div>
@@ -267,14 +301,14 @@ export default function App() {
 
             {/* Status */}
             {status && (
-                <div className={`flex items-center gap-1 text-sm ${status.type === "error" ? "text-red-900" : status.type === "success" ? "text-green-500" : "animate-pulse"}`}>
+                <div className={`flex items-center gap-1 text-sm ${status.type === "error" ? "text-[var(--app-error)]" : status.type === "success" ? "text-[var(--app-success)]" : "animate-pulse text-[var(--app-text-muted)]"}`}>
                     {status.type === "error" ? <RiErrorWarningFill size={14} /> : status.type === "success" ? <RiCheckFill size={14} /> : null}
                     {status.msg}
                 </div>
             )}
 
             <button
-                className={`cursor-pointer bg-neutral-100 outline-none ring-neutral-50 focus:ring-2 rounded-full p-4 font-medium flex items-center justify-center gap-2 ${loading ? "disabled:animate-pulse" : "disabled:opacity-25"}`}
+                className={`cursor-pointer outline-none focus:ring-2 rounded-full p-4 font-medium flex items-center justify-center gap-2 bg-[var(--app-surface)] text-[var(--app-text)] ring-[var(--app-ring)] ${loading ? "disabled:animate-pulse" : "disabled:opacity-25"}`}
                 onClick={handleGenerate}
                 disabled={!canGenerate || loading}
                 title={
@@ -289,11 +323,11 @@ export default function App() {
 
             {/* Generated files */}
             {generatedFiles.archive_filename && (
-                <div className="flex flex-col gap-2 rounded-md pl-3 border-l-2 border-neutral-200 py-2">
+                <div className="flex flex-col gap-2 rounded-md pl-3 border-l-2 py-2 border-[var(--app-border-strong)]">
                     <div className="font-bold text-xs">
                         Результат
                     </div>
-                    <button onClick={downloadArchive} className="cursor-pointer flex items-center gap-1 text-neutral-900 font-medium text-sm px-2 py-1 bg-neutral-50 rounded-lg text-start">
+                    <button onClick={downloadArchive} className="cursor-pointer flex items-center gap-1 rounded-lg px-2 py-1 text-start font-medium text-sm bg-[var(--app-surface)] text-[var(--app-text)]">
                         <RiFileWordLine size={14} />
                         <span className="flex-1">
                             {generatedFiles.archive_filename}

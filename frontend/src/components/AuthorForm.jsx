@@ -39,7 +39,7 @@ function InputWithTooltip({ label, name, value, onChange, required }) {
         <div className="flex flex-col gap-1 relative">
             <label
                 htmlFor={name}
-                className="text-xs uppercase font-bold text-neutral-700"
+                className="text-xs uppercase font-bold text-[var(--app-text-muted)]"
             >
                 {label}
                 {required && " *"}
@@ -49,18 +49,18 @@ function InputWithTooltip({ label, name, value, onChange, required }) {
                 type="text"
                 value={value}
                 autoComplete="off"
-                className={`rounded-lg border focus:ring-2 outline-none px-3 py-1.5 ${showError ? "border-red-400 ring-red-100" : "border-neutral-200 ring-neutral-100"}`}
+                className={`rounded-lg border bg-[var(--app-bg)] text-[var(--app-text)] placeholder-[var(--app-placeholder)] focus:ring-2 outline-none px-3 py-1.5 ${showError ? "border-[var(--app-error-border)] ring-[var(--app-error-ring)]" : "border-[var(--app-border-strong)] ring-[var(--app-ring)]"}`}
                 onChange={(e) => onChange(name, e.target.value)}
                 onFocus={() => setFocused(true)}
                 onBlur={() => setFocused(false)}
             />
             {focused && hint && (
-                <div className="absolute top-full right-0 text-sm text-blue-600">
+                <div className="absolute top-full right-0 text-sm text-[var(--app-tooltip)]">
                     <RiQuestionFill className="inline-block mr-1 mb-0.5" size={14} />
                     {hint}
                 </div>
             )}
-            <div className="text-sm text-red-900">{errorMsg}</div>
+            <div className="text-sm text-[var(--app-error)]">{errorMsg}</div>
         </div>
     );
 }
@@ -102,17 +102,17 @@ export function AuthorForm({ index, author, onChange, onRemove, canRemove }) {
     const handleChange = (field, val) => onChange(index, field, val);
 
     return (
-        <div className="flex flex-col gap-4 pl-4 border-l-2 border-neutral-200 rounded-md py-2">
+        <div className="flex flex-col gap-4 rounded-md py-2 pl-4 border-l-2 border-[var(--app-border-strong)]">
             <div className="flex items-center gap-2">
                 {canRemove && (
                     <button
                         onClick={() => onRemove(index)}
-                        className="cursor-pointer text-neutral-400 hover:text-neutral-700 transition"
+                        className="cursor-pointer transition text-[var(--app-text-soft)] hover:text-[var(--app-text-muted)]"
                     >
                         <RiDeleteBin6Line size={16} />
                     </button>
                 )}
-                <h3 className="uppercase font-medium text-neutral-400">
+                <h3 className="uppercase font-medium text-[var(--app-text-soft)]">
                     Автор {index + 1}
                 </h3>
             </div>
