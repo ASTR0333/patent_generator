@@ -110,7 +110,8 @@ export default function App() {
         try {
             const fd = new FormData();
             fd.append("file", file);
-            const { data } = await axios.post(`${API}/upload-source`, fd);
+            fd.append("kind", "source");
+            const { data } = await axios.post(`${API}/upload`, fd);
             setSourceFile({
                 name: file.name,
                 serverName: data.filename,
@@ -136,7 +137,8 @@ export default function App() {
         try {
             const fd = new FormData();
             fd.append("file", file);
-            const { data } = await axios.post(`${API}/upload-referat`, fd);
+            fd.append("kind", "referat");
+            const { data } = await axios.post(`${API}/upload`, fd);
             setReferatFile({ name: file.name, serverName: data.filename });
             setStatus({ type: "success", msg: "Реферат загружен." });
         } catch (e) {
