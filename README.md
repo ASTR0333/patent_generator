@@ -1,46 +1,76 @@
-﻿# patent_generator
+# patent_generator
 
 Генератор патентной документации для программ ЭВМ.
 
-## Структура проекта
+## Архитектура
 
-```
-patent-generator/
-├── generator.py    # Основная программа (CLI)
-├── gui.py    # Tkinter GUI (устаревший)
+Проект состоит из 3 основных слоев:
+
+1. Frontend (React + Vite + Tailwind + ReactQuill)
+- Пошаговый сценарий (wizard):
+  - приветственный экран;
+  - ввод количества авторов;
+  - ввод данных авторов + названия программы;
+  - загрузка исходника/реферата + редактор текста реферата.
+- Редактор реферата (Quill) с поддержкой заголовков, списков, цветов, выравнивания.
+- Тема light/dark.
+- API вызывается через относительный префикс `/api`.
+
+2. Backend (FastAPI)
+- Единый upload endpoint: `POST /api/upload` с `kind=source|referat`.
+- Генерация документов:
+  - `POST /api/generate` (синхронная);
+  - `POST /api/generate-queued` + `GET /api/generate-status/{job_id}` (через очередь Redis).
+- Сборка DOCX по шаблонам в `templates/`.
+- Архив результатов `*_пакет_документов.zip` (без UUID в имени).
+- Скачивание через `GET /api/download/{filename}` с красивым `Content-Disposition`.
+
+3. Queue / Storage
+- Redis используется как backend очереди:
+  - список задач: `patent_generator:jobs:queue`;
+  - статусы задач: `patent_generator:job:<job_id>`.
+- `output/` используется для загруженных и сгенерированных файлов.
+- Включена автоочистка `output`:
+  - переменные: `OUTPUT_RETENTION_HOURS` (по умолчанию 72),
+  - `OUTPUT_CLEANUP_INTERVAL_SECONDS` (по умолчанию 21600).
+
+## Структура
+
+```text
+patent_generator/
 ├── backend/
-│   └──  main.py    # FastAPI бэкенд
-│   
+│   └── main.py
 ├── frontend/
+│   ├── src/
+│   │   ├── App.jsx
+│   │   ├── index.css
+│   │   └── components/
 │   ├── package.json
-│   ├── vite.config.js
-│   └── src/
-│       ├── App.jsx
-│       └── components/
-│           ├── AuthorForm.jsx    # Форма автора с валидацией и подсказками
-│           └── FileUpload.jsx    # Компонент загрузки файлов
-├── templates/    # Шаблоны .docx
-├──  output/    # Папка для архива с результатами
-└── requirements.txt     # Зависимости бэкенда
+│   └── vite.config.js
+├── templates/
+│   ├── referat.docx
+│   ├── source_code_template.docx
+│   └── pril*.docx
+├── generator.py
+├── requirements.txt
+├── Dockerfile.backend
+├── Dockerfile.frontend
+├── docker-compose.yml
+├── docker-compose.server.yml
+├── .gitignore
+└── .dockerignore
 ```
 
-## Запуск веб-интерфейса
+## Запуск без Docker (локально)
 
-### 1. Бэкенд (FastAPI)
+### 1) Backend
 
 ```bash
-# Установка зависимостей
 pip install -r requirements.txt
-
-# Запуск (из корня проекта)
-uvicorn backend.main:app --reload --port 8000
+REDIS_URL=redis://localhost:6379/0 uvicorn backend.main:app --reload --port 8000
 ```
 
-Бэкенд будет доступен по адресу: http://localhost:8000
-
-API документация (Swagger): http://localhost:8000/docs
-
-### 2. Фронтенд (React + Vite)
+### 2) Frontend
 
 ```bash
 cd frontend
@@ -48,32 +78,23 @@ npm install
 npm run dev
 ```
 
-Фронтенд будет доступен по адресу: http://localhost:5173
+- Frontend: http://localhost:5173
+- Backend docs: http://localhost:8000/docs
 
-## Поддерживаемые форматы исходного кода
-
-Помимо `.py`, теперь поддерживаются все популярные языки программирования:
-`.js`, `.ts`, `.jsx`, `.tsx`, `.java`, `.c`, `.cpp`, `.h`, `.hpp`, `.cs`, `.go`,
-`.rs`, `.rb`, `.php`, `.swift`, `.kt`, `.scala`, `.lua`, `.sh`, `.bash`, `.sql`,
-`.html`, `.css`, `.scss`, `.json`, `.yaml`, `.toml`, `.dart`, и многие другие.
-
-А также специальные имена файлов: `Dockerfile`, `Makefile`, `Gemfile`, и т.д.
-
-## Поддержка архивов
-
-При загрузке исходного кода можно прикрепить архив:
-`.zip`, `.tar`, `.tar.gz`, `.tgz`, `.tar.bz2`, `.rar`, `.7z`
-
-Архив автоматически распаковывается, из него извлекаются все файлы с исходным кодом,
-которые последовательно вставляются в документ с разделителями (именами файлов).
-
-## CLI запуск
+## Запуск через Docker (локально)
 
 ```bash
-pip install -r requirements.txt
-python generator.py
+docker compose up --build -d
 ```
 
-> **Примечание:** Подсчёт страниц Word-документов (`pywin32`) работает только на Windows.
-> На других платформах количество страниц будет отображаться как `?`.
+Проверка:
+- Сайт: http://localhost
+- API: http://localhost/api/patterns
+- Backend docs: http://localhost:8000/docs
+
+Остановка:
+
+```bash
+docker compose down
+```
 
