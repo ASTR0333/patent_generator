@@ -1,0 +1,27 @@
+# macOS / editors
+.DS_Store
+.idea/
+.vscode/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.venv/
+venv/
+
+# Build/runtime artifacts
+output/
+frontend/dist/
+backend/__pycache__/
+
+# Env / secrets
+.env
+.env.*
+
+# Office temp files
+templates/~$*.docx
+
+# Root npm lock is accidental for this repo
+/package-lock.json
