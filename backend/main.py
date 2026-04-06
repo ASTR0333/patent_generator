@@ -112,13 +112,7 @@ OUTPUT_CLEANUP_INTERVAL_SECONDS = int(os.getenv("OUTPUT_CLEANUP_INTERVAL_SECONDS
 # ---------------------------------------------------------------------------
 # App
 # ---------------------------------------------------------------------------
-app = FastAPI(
-    title="Patent Generator API",
-    version="1.0.0",
-    docs_url="/api/docs",
-    redoc_url="/api/redoc",
-    openapi_url="/api/openapi.json",
-)
+app = FastAPI(title="Patent Generator API", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
