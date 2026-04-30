@@ -36,31 +36,31 @@ function InputWithTooltip({ label, name, value, onChange, required }) {
     const errorMsg = showError ? getErrorMsg(name) : "";
 
     return (
-        <div className="flex flex-col gap-1 relative">
+        <div className="flex flex-col gap-1.5 relative">
             <label
                 htmlFor={name}
-                className="text-xs uppercase font-bold text-[var(--app-text-muted)]"
+                className="text-[10px] sm:text-xs uppercase font-extrabold tracking-wider text-[var(--app-text-soft)]"
             >
                 {label}
-                {required && " *"}
+                {required && <span className="text-[var(--app-tooltip)]"> *</span>}
             </label>
             <input
                 id={name}
                 type="text"
                 value={value}
                 autoComplete="off"
-                className={`rounded-lg border bg-[var(--app-bg)] text-[var(--app-text)] placeholder-[var(--app-placeholder)] focus:ring-2 outline-none px-3 py-1.5 ${showError ? "border-[var(--app-error-border)] ring-[var(--app-error-ring)]" : "border-[var(--app-border-strong)] ring-[var(--app-ring)]"}`}
+                className={`glass-input rounded-xl px-4 py-2.5 text-[var(--app-text)] placeholder-[var(--app-placeholder)] w-full transition-all ${showError ? "border-[var(--app-error-border)] focus:ring-[var(--app-error-ring)]" : ""}`}
                 onChange={(e) => onChange(name, e.target.value)}
                 onFocus={() => setFocused(true)}
                 onBlur={() => setFocused(false)}
             />
             {focused && hint && (
-                <div className="absolute top-full right-0 text-sm text-[var(--app-tooltip)]">
+                <div className="absolute top-full right-0 z-10 mt-1 p-2 rounded-xl glass-panel text-xs text-[var(--app-tooltip)] shadow-lg max-w-[200px] whitespace-pre-wrap">
                     <RiQuestionFill className="inline-block mr-1 mb-0.5" size={14} />
                     {hint}
                 </div>
             )}
-            <div className="text-sm text-[var(--app-error)]">{errorMsg}</div>
+            <div className="text-xs text-[var(--app-error)] min-h-[16px] font-medium">{errorMsg}</div>
         </div>
     );
 }
@@ -102,86 +102,44 @@ export function AuthorForm({ index, author, onChange, onRemove, canRemove }) {
     const handleChange = (field, val) => onChange(index, field, val);
 
     return (
-        <div className="flex flex-col gap-4 rounded-md py-2 pl-4 border-l-2 border-[var(--app-border-strong)]">
-            <div className="flex items-center gap-2">
+        <div className="glass-panel p-6 sm:p-8 rounded-[2rem] flex flex-col gap-6 relative shadow-lg">
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <div className="bg-[var(--app-tooltip)] text-white size-8 rounded-full flex items-center justify-center font-bold shadow-md">
+                        {index + 1}
+                    </div>
+                    <h3 className="uppercase font-extrabold tracking-wider text-lg">
+                        Автор
+                    </h3>
+                </div>
                 {canRemove && (
                     <button
                         onClick={() => onRemove(index)}
-                        className="cursor-pointer transition text-[var(--app-text-soft)] hover:text-[var(--app-text-muted)]"
+                        className="glass-button p-2 rounded-full text-[var(--app-error)] hover:bg-[var(--app-error-ring)] transition-colors"
+                        title="Удалить автора"
                     >
-                        <RiDeleteBin6Line size={16} />
+                        <RiDeleteBin6Line size={20} />
                     </button>
                 )}
-                <h3 className="uppercase font-medium text-[var(--app-text-soft)]">
-                    Автор {index + 1}
-                </h3>
             </div>
-            <div className="flex flex-col gap-2">
-                <InputWithTooltip
-                    label="ФИО"
-                    name="fio"
-                    value={author.fio}
-                    onChange={handleChange}
-                    required
-                />
-                <InputWithTooltip
-                    label="Адрес"
-                    name="address"
-                    value={author.address}
-                    onChange={handleChange}
-                    required
-                />
-                <InputWithTooltip
-                    label="Телефон"
-                    name="phone"
-                    value={author.phone}
-                    onChange={handleChange}
-                    required
-                />
-                <InputWithTooltip
-                    label="Email"
-                    name="email"
-                    value={author.email}
-                    onChange={handleChange}
-                    required
-                />
-                <InputWithTooltip
-                    label="ИНН"
-                    name="inn"
-                    value={author.inn}
-                    onChange={handleChange}
-                    required
-                />
-                <InputWithTooltip
-                    label="СНИЛС"
-                    name="snils"
-                    value={author.snils}
-                    onChange={handleChange}
-                    required
-                />
-                <InputWithTooltip
-                    label="Дата рождения"
-                    name="birthday"
-                    value={author.birthday}
-                    onChange={handleChange}
-                    required
-                />
-                <div className="field-full">
-                    <InputWithTooltip
-                        label="Паспорт"
-                        name="passport"
-                        value={author.passport}
-                        onChange={handleChange}
-                        required
-                    />
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                <div className="md:col-span-2">
+                    <InputWithTooltip label="ФИО" name="fio" value={author.fio} onChange={handleChange} required />
                 </div>
-                <div className="field-full">
-                    <InputWithTooltip
-                        label="Творческий вклад"
-                        name="skill"
-                        value={author.skill}
-                        onChange={handleChange}
-                    />
+                <div className="md:col-span-2">
+                    <InputWithTooltip label="Адрес" name="address" value={author.address} onChange={handleChange} required />
+                </div>
+                <InputWithTooltip label="Телефон" name="phone" value={author.phone} onChange={handleChange} required />
+                <InputWithTooltip label="Email" name="email" value={author.email} onChange={handleChange} required />
+                <InputWithTooltip label="ИНН" name="inn" value={author.inn} onChange={handleChange} required />
+                <InputWithTooltip label="СНИЛС" name="snils" value={author.snils} onChange={handleChange} required />
+                <InputWithTooltip label="Дата рождения" name="birthday" value={author.birthday} onChange={handleChange} required />
+                <div className="md:col-span-2">
+                    <InputWithTooltip label="Паспорт" name="passport" value={author.passport} onChange={handleChange} required />
+                </div>
+                <div className="md:col-span-2">
+                    <InputWithTooltip label="Творческий вклад" name="skill" value={author.skill} onChange={handleChange} />
                 </div>
             </div>
         </div>
