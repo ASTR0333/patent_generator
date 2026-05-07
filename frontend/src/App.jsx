@@ -389,6 +389,7 @@ export default function App() {
                                 onChange={(e) => {
                                     const next = e.target.value;
                                     if (!/^\d*$/.test(next)) return;
+                                    if (next.length > 3) return;
                                     setAuthorCountInput(next);
                                     if (next === "") return;
                                     const parsed = Number.parseInt(next, 10);

@@ -105,7 +105,7 @@ export function AuthorForm({ index, author, onChange, onRemove, canRemove }) {
         <div className="glass-panel p-6 sm:p-8 rounded-[2rem] flex flex-col gap-6 relative shadow-lg">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <div className="bg-[var(--app-tooltip)] text-white size-8 rounded-full flex items-center justify-center font-bold shadow-md">
+                    <div className="bg-[var(--app-text)] text-[var(--app-bg)] size-8 rounded-full flex items-center justify-center font-bold shadow-md">
                         {index + 1}
                     </div>
                     <h3 className="uppercase font-extrabold tracking-wider text-lg">
