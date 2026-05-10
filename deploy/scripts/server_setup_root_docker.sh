@@ -11,13 +11,23 @@ apt install -y git curl ca-certificates gnupg lsb-release nginx certbot python3-
 
 install -m 0755 -d /etc/apt/keyrings
 if [[ ! -f /etc/apt/keyrings/docker.gpg ]]; then
-  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+  ID="$(. /etc/os-release && echo "$ID")"
+  curl -fsSL "https://download.docker.com/linux/$ID/gpg" | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
   chmod a+r /etc/apt/keyrings/docker.gpg
 fi
 
 ARCH="$(dpkg --print-architecture)"
+ID="$(. /etc/os-release && echo "$ID")"
 CODENAME="$(. /etc/os-release && echo "$VERSION_CODENAME")"
-echo "deb [arch=${ARCH} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu ${CODENAME} stable" > /etc/apt/sources.list.d/docker.list
+
+if [[ "$ID" == "ubuntu" ]]; then
+  echo "deb [arch=${ARCH} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu ${CODENAME} stable" > /etc/apt/sources.list.d/docker.list
+elif [[ "$ID" == "debian" ]]; then
+  echo "deb [arch=${ARCH} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian ${CODENAME} stable" > /etc/apt/sources.list.d/docker.list
+else
+  echo "Unsupported OS: $ID. This script supports Ubuntu and Debian."
+  exit 1
+fi
 
 apt update
 apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin

@@ -98,3 +98,13 @@ docker compose up --build -d
 docker compose down
 ```
 
+## Запуск через Docker (сервер)
+
+Для быстрого развертывания на удаленном сервере (Ubuntu/Debian) используйте универсальный скрипт:
+
+```bash
+sudo bash deploy/scripts/setup.sh
+```
+
+Подробную информацию о развертывании, настройке Nginx и SSL читайте в [deploy/README.md](deploy/README.md).
+
