@@ -32,7 +32,7 @@ const SOURCE_ACCEPT = [
     ".bz2", ".rar", ".7z",
 ].join(",");
 
-const THEME_KEY = "patent-generator-theme";
+const THEME_KEY = "patent-generator-theme-v2";
 const TABS_KEY = "patent-generator-tabs";
 const WIZARD_KEY = "patent-generator-wizard-v3";
 
@@ -75,7 +75,7 @@ export default function App() {
         if (typeof window === "undefined") return "light";
         const savedTheme = window.localStorage.getItem(THEME_KEY);
         if (savedTheme === "light" || savedTheme === "dark") return savedTheme;
-        return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        return "light";
     });
 
     const [tabsLayout, setTabsLayout] = useState(() => {
