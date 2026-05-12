@@ -8,19 +8,25 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 # Install system dependencies for document conversion and page counting
 # Including fonts to ensure consistent pagination between Word and LibreOffice
 RUN apt-get update && \
-    # Enable contrib repository for mscorefonts
-    sed -i 's/Components: main/Components: main contrib/g' /etc/apt/sources.list.d/debian.sources && \
+    # Enable contrib and non-free repositories (handle both traditional and deb822 formats)
+    if [ -f /etc/apt/sources.list.d/debian.sources ]; then \
+        sed -i 's/Components: main/Components: main contrib non-free non-free-firmware/g' /etc/apt/sources.list.d/debian.sources; \
+    else \
+        sed -i 's/ main/ main contrib non-free non-free-firmware/g' /etc/apt/sources.list; \
+    fi && \
     apt-get update && \
     # Pre-accept MS Core Fonts EULA
-    echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" | debconf-set-selections || \
-    (apt-get install -y debconf && echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" | debconf-set-selections) && \
+    apt-get install -y --no-install-recommends debconf && \
+    echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" | debconf-set-selections && \
     apt-get install -y --no-install-recommends \
+    build-essential \
     libreoffice-writer \
     libreoffice-calc \
     poppler-utils \
     qpdf \
     ttf-mscorefonts-installer \
     fontconfig \
+    unrar-free \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
