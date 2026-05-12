@@ -11,47 +11,43 @@
 :root {
     color-scheme: light;
 
-    --app-accent: #3b82f6;
-
-    --app-bg: var(--app-accent);
-    --app-surface: rgba(255, 255, 255, 0.4);
-    --app-surface-strong: rgba(255, 255, 255, 0.6);
-    --app-border: rgba(255, 255, 255, 0.3);
-    --app-border-strong: rgba(255, 255, 255, 0.5);
-    --app-text: #0f172a;
-    --app-text-muted: #1e293b;
-    --app-text-soft: #334155;
-    --app-placeholder: #475569;
-    --app-icon: #0f172a;
-    --app-ring: rgba(255, 255, 255, 0.8);
+    --app-bg: #ffffff;
+    --app-surface: #ffffff;
+    --app-surface-strong: #f8f9fa;
+    --app-border: #e2e8f0;
+    --app-border-strong: #cbd5e1;
+    --app-text: #000000;
+    --app-text-muted: #475569;
+    --app-text-soft: #64748b;
+    --app-placeholder: #94a3b8;
+    --app-icon: #000000;
+    --app-ring: #000000;
     --app-tooltip: #000000;
-    --app-success: #059669;
-    --app-error: #991b1b;
-    --app-error-border: rgba(255, 255, 255, 0.4);
-    --app-error-ring: rgba(254, 226, 226, 0.5);
-    --app-glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+    --app-success: #10b981;
+    --app-error: #ef4444;
+    --app-error-border: #fca5a5;
+    --app-error-ring: #fee2e2;
 }
 
 :root[data-theme="dark"] {
     color-scheme: dark;
 
-    --app-bg: var(--app-accent);
-    --app-surface: rgba(0, 0, 0, 0.4);
-    --app-surface-strong: rgba(0, 0, 0, 0.6);
-    --app-border: rgba(255, 255, 255, 0.1);
-    --app-border-strong: rgba(255, 255, 255, 0.2);
-    --app-text: #f8fafc;
-    --app-text-muted: #e2e8f0;
-    --app-text-soft: #cbd5e1;
-    --app-placeholder: #94a3b8;
-    --app-icon: #f8fafc;
-    --app-ring: rgba(255, 255, 255, 0.3);
+    --app-bg: #000000;
+    --app-surface: #000000;
+    --app-surface-strong: #111111;
+    --app-border: #222222;
+    --app-border-strong: #333333;
+    --app-text: #ffffff;
+    --app-text-muted: #94a3b8;
+    --app-text-soft: #64748b;
+    --app-placeholder: #475569;
+    --app-icon: #ffffff;
+    --app-ring: #ffffff;
     --app-tooltip: #ffffff;
     --app-success: #34d399;
-    --app-error: #fca5a5;
-    --app-error-border: rgba(255, 255, 255, 0.2);
-    --app-error-ring: rgba(248, 113, 113, 0.2);
-    --app-glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    --app-error: #f87171;
+    --app-error-border: #450a0a;
+    --app-error-ring: #450a0a;
 }
 
 html,
@@ -61,184 +57,67 @@ body,
 }
 
 body {
-    background-color: var(--app-accent);
+    background-color: var(--app-bg);
     color: var(--app-text);
-    transition: background-color 300ms ease, color 160ms ease;
+    transition: background-color 200ms ease, color 200ms ease;
     margin: 0;
-    background-attachment: fixed;
-    position: relative;
-    z-index: 0;
-}
-
-body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 50%, rgba(0,0,0,0.1) 100%);
-    pointer-events: none;
-    z-index: -2;
-}
-
-body::after {
-    content: "";
-    position: fixed;
-    top: -50%; left: -50%; width: 200%; height: 200%;
-    background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.15), transparent 60%),
-                radial-gradient(circle at 80% 20%, rgba(255,255,255,0.2), transparent 40%);
-    animation: liquidFloat 15s infinite alternate ease-in-out;
-    pointer-events: none;
-    z-index: -1;
-}
-
-:root[data-theme="dark"] body::before {
-    background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.7) 100%);
-}
-
-:root[data-theme="dark"] body::after {
-    background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.05), transparent 60%),
-                radial-gradient(circle at 80% 20%, rgba(255,255,255,0.08), transparent 40%);
-}
-
-@keyframes liquidFloat {
-    0% { transform: translate(0, 0) scale(1); }
-    50% { transform: translate(2%, 3%) scale(1.05); }
-    100% { transform: translate(-2%, -1%) scale(0.95); }
 }
 
 .glass-panel {
     background: var(--app-surface);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid var(--app-border-strong);
-    box-shadow: var(--app-glass-shadow);
+    border: 1px solid var(--app-border);
 }
 
 .glass-input {
-    background: var(--app-surface-strong);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    background: var(--app-surface);
     border: 1px solid var(--app-border);
     transition: all 0.2s ease;
 }
 
 .glass-input:focus {
-    border-color: var(--app-border-strong);
-    box-shadow: 0 0 0 2px var(--app-ring);
+    border-color: var(--app-text);
     outline: none;
 }
 
 .glass-button {
     background: var(--app-surface-strong);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid var(--app-border-strong);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--app-border);
     transition: all 0.2s ease;
 }
 
 .glass-button:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.5);
-    transform: translateY(-1px);
-}
-
-:root[data-theme="dark"] .glass-button:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.15);
+    background: var(--app-surface);
+    border-color: var(--app-text);
 }
 
 ::placeholder {
     color: var(--app-placeholder);
 }
 
-.field-full {
-    width: 100%;
-}
-
-.file-upload-box {
-    min-height: 1.5rem;
-}
-
-.file-name {
-    color: var(--app-text-soft);
-    font-size: 0.875rem;
-    line-height: 1.25rem;
-    overflow-wrap: anywhere;
-}
-
-.file-name.ok {
-    color: var(--app-text);
-}
-
 .referat-editor .ql-toolbar {
     border: 0;
-    border-bottom: 1px solid var(--app-border-strong);
+    border-bottom: 1px solid var(--app-border);
     background: transparent;
-}
-
-.referat-editor .ql-toolbar.ql-snow .ql-formats {
-    margin-right: 12px;
-    margin-bottom: 8px;
-}
-
-.referat-editor .ql-snow .ql-picker.ql-header {
-    width: 150px;
-}
-
-.referat-editor .ql-snow .ql-picker.ql-header .ql-picker-label::before,
-.referat-editor .ql-snow .ql-picker.ql-header .ql-picker-item::before {
-    content: "Обычный";
-}
-
-.referat-editor .ql-snow .ql-picker.ql-header .ql-picker-label[data-value="1"]::before,
-.referat-editor .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="1"]::before {
-    content: "Заголовок 1";
-}
-
-.referat-editor .ql-snow .ql-picker.ql-header .ql-picker-label[data-value="2"]::before,
-.referat-editor .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="2"]::before {
-    content: "Заголовок 2";
-}
-
-.referat-editor .ql-snow .ql-picker.ql-header .ql-picker-label[data-value="3"]::before,
-.referat-editor .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="3"]::before {
-    content: "Заголовок 3";
-}
-
-.referat-editor .ql-toolbar.ql-snow {
-    padding: 10px 12px 2px;
 }
 
 .referat-editor .ql-snow .ql-picker-options {
     background: var(--app-surface-strong);
-    backdrop-filter: blur(12px);
-    border: 1px solid var(--app-border-strong);
+    border: 1px solid var(--app-border);
 }
 
 .referat-editor .ql-snow .ql-picker-item {
     color: var(--app-text);
 }
 
-.referat-editor .ql-snow .ql-picker-item:hover {
-    color: var(--app-text);
-    background: var(--app-surface);
-}
-
 .referat-editor .ql-container {
     border: 0;
     min-height: 360px;
     font-size: 16px;
-    line-height: 1.65;
-    background: transparent;
+    line-height: 1.6;
 }
 
 .referat-editor .ql-editor {
-    min-height: 360px;
     color: var(--app-text);
-    padding: 16px;
-}
-
-.referat-editor .ql-editor.ql-blank::before {
-    color: var(--app-text-soft);
-    font-style: normal;
 }
 
 :root[data-theme="dark"] .referat-editor .ql-snow .ql-stroke {
@@ -253,21 +132,3 @@ body::after {
     color: var(--app-text);
 }
 
-:root[data-theme="dark"] .referat-editor .ql-snow .ql-picker-options {
-    background: var(--app-surface-strong);
-    border-color: var(--app-border-strong);
-}
-
-:root[data-theme="dark"] .referat-editor .ql-snow .ql-picker-item {
-    color: var(--app-text);
-}
-
-:root[data-theme="dark"] .referat-editor .ql-toolbar button:hover .ql-stroke,
-:root[data-theme="dark"] .referat-editor .ql-toolbar button.ql-active .ql-stroke {
-    stroke: var(--app-text);
-}
-
-:root[data-theme="dark"] .referat-editor .ql-toolbar button:hover .ql-fill,
-:root[data-theme="dark"] .referat-editor .ql-toolbar button.ql-active .ql-fill {
-    fill: var(--app-text);
-}

@@ -34,19 +34,7 @@ const SOURCE_ACCEPT = [
 
 const THEME_KEY = "patent-generator-theme";
 const TABS_KEY = "patent-generator-tabs";
-const ACCENT_KEY = "patent-generator-accent";
 const WIZARD_KEY = "patent-generator-wizard-v3";
-
-const ACCENT_COLORS = [
-    { name: "Синий", value: "#3b82f6" },
-    { name: "Изумрудный", value: "#10b981" },
-    { name: "Фиолетовый", value: "#8b5cf6" },
-    { name: "Розовый", value: "#f43f5e" },
-    { name: "Оранжевый", value: "#f97316" },
-    { name: "Бирюзовый", value: "#14b8a6" },
-    { name: "Серый", value: "#64748b" },
-    { name: "Черный", value: "#0f172a" },
-];
 
 const STEP_WELCOME = 0;
 const STEP_COUNT = 1;
@@ -90,11 +78,6 @@ export default function App() {
         return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
     });
 
-    const [accent, setAccent] = useState(() => {
-        if (typeof window === "undefined") return "#3b82f6";
-        return window.localStorage.getItem(ACCENT_KEY) || "#3b82f6";
-    });
-
     const [tabsLayout, setTabsLayout] = useState(() => {
         if (typeof window === "undefined") return "horizontal";
         return window.localStorage.getItem(TABS_KEY) || "horizontal";
@@ -119,11 +102,6 @@ export default function App() {
         document.documentElement.dataset.theme = theme;
         window.localStorage.setItem(THEME_KEY, theme);
     }, [theme]);
-
-    useEffect(() => {
-        document.documentElement.style.setProperty('--app-accent', accent);
-        window.localStorage.setItem(ACCENT_KEY, accent);
-    }, [accent]);
 
     useEffect(() => {
         window.localStorage.setItem(TABS_KEY, tabsLayout);
@@ -293,7 +271,7 @@ export default function App() {
 
     return (
         <div className="mx-auto w-full min-h-screen flex flex-col gap-6 p-4 md:p-8 text-[var(--app-text)] transition-colors relative">
-            <header className="glass-panel flex items-center justify-between gap-3 rounded-3xl p-4 md:px-6 z-10">
+            <header className="glass-panel flex items-center justify-between gap-3 rounded-2xl p-4 md:px-6 z-10">
                 <div className="flex items-center gap-4">
                     <div className="glass-panel p-2.5 rounded-2xl shadow-lg">
                         <RiFileAiFill size={28} className="text-[var(--app-text)]" />
@@ -314,7 +292,7 @@ export default function App() {
             </header>
 
             <div className={`flex flex-1 ${tabsLayout === "vertical" ? "flex-col md:flex-row" : "flex-col"} gap-6`}>
-                <nav className={`glass-panel rounded-3xl p-3 z-10 ${tabsLayout === "vertical" ? "md:w-72 shrink-0 h-fit sticky top-8" : ""}`}>
+                <nav className={`glass-panel rounded-2xl p-3 z-10 ${tabsLayout === "vertical" ? "md:w-72 shrink-0 h-fit sticky top-8" : ""}`}>
                     <div className={tabsLayout === "horizontal" ? "grid grid-cols-2 md:grid-cols-4 gap-3" : "flex flex-col gap-3"}>
                         {STEPS.map((step) => {
                             const isActive = currentStep === step.id;
@@ -356,7 +334,7 @@ export default function App() {
 
                 <main className="flex-1 flex flex-col gap-6 w-full max-w-5xl mx-auto z-10">
                     {currentStep === STEP_WELCOME && (
-                        <section className="glass-panel flex flex-col gap-6 rounded-3xl p-8">
+                        <section className="glass-panel flex flex-col gap-6 rounded-2xl p-8">
                             <div className="flex flex-col gap-2">
                                 <h2 className="text-3xl font-extrabold tracking-tight">Добро пожаловать</h2>
                                 <p className="text-[var(--app-text-soft)] text-lg">
@@ -367,7 +345,7 @@ export default function App() {
                             <button
                                 type="button"
                                 onClick={() => setCurrentStep(STEP_COUNT)}
-                                className="glass-button cursor-pointer rounded-2xl p-4 font-bold text-lg flex items-center justify-center gap-2 self-start px-8 shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all"
+                                className="glass-button cursor-pointer rounded-2xl p-4 font-bold text-lg flex items-center justify-center gap-2 self-start px-8 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all"
                             >
                                 <RiPlayFill size={24} />
                                 Начать генерацию
@@ -376,7 +354,7 @@ export default function App() {
                     )}
 
                     {currentStep === STEP_COUNT && (
-                        <section className="glass-panel flex flex-col gap-6 rounded-3xl p-8">
+                        <section className="glass-panel flex flex-col gap-6 rounded-2xl p-8">
                             <label className="font-extrabold text-sm uppercase tracking-wider text-[var(--app-text-soft)]" htmlFor="authorCount">
                                 Количество авторов
                             </label>
@@ -428,7 +406,7 @@ export default function App() {
                     )}
 
                     {currentStep === STEP_AUTHORS && (
-                        <section className="glass-panel flex flex-col gap-6 rounded-3xl p-8">
+                        <section className="glass-panel flex flex-col gap-6 rounded-2xl p-8">
                             <h3 className="font-extrabold text-sm uppercase tracking-wider text-[var(--app-text-soft)]">Данные авторов</h3>
                             <div className="flex flex-col gap-3">
                                 <label
@@ -481,7 +459,7 @@ export default function App() {
                     )}
 
                     {currentStep === STEP_FILES && (
-                        <section className="glass-panel flex flex-col gap-6 rounded-3xl p-8">
+                        <section className="glass-panel flex flex-col gap-6 rounded-2xl p-8">
                             <h3 className="font-extrabold text-sm uppercase tracking-wider text-[var(--app-text-soft)]">Файлы и реферат</h3>
 
                             <div className="flex gap-4 max-md:flex-col">
@@ -562,7 +540,7 @@ export default function App() {
                                     Назад
                                 </button>
                                 <button
-                                    className="glass-button cursor-pointer outline-none focus:ring-2 rounded-2xl px-8 py-3 font-bold text-lg flex items-center justify-center gap-2 shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all disabled:opacity-50 disabled:scale-100 disabled:shadow-none"
+                                    className="glass-button cursor-pointer outline-none focus:ring-2 rounded-2xl px-8 py-3 font-bold text-lg flex items-center justify-center gap-2 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all disabled:opacity-50 disabled:scale-100 disabled:shadow-none"
                                     onClick={handleGenerate}
                                     disabled={!canGenerate || loading}
                                     title={!canGenerate ? "Нужен исходник и реферат (файл или текст)" : ""}
@@ -582,7 +560,7 @@ export default function App() {
                     )}
 
                     {generatedFiles.archive_filename && (
-                        <div className="glass-panel p-6 rounded-3xl flex flex-col gap-4 border-[var(--app-success)]">
+                        <div className="glass-panel p-6 rounded-2xl flex flex-col gap-4 border-[var(--app-success)]">
                             <div className="font-extrabold text-sm uppercase tracking-wider text-[var(--app-success)] flex items-center gap-2">
                                 <RiCheckFill size={18} />
                                 Документы готовы
@@ -601,7 +579,7 @@ export default function App() {
 
             {showSettings && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/20 backdrop-blur-sm transition-opacity">
-                    <div className="glass-panel w-full max-w-md rounded-[2rem] p-8 flex flex-col gap-8 relative shadow-2xl animate-in fade-in zoom-in duration-200">
+                    <div className="glass-panel w-full max-w-md rounded-2xl p-8 flex flex-col gap-8 relative shadow-2xl animate-in fade-in zoom-in duration-200">
                         <button
                             onClick={() => setShowSettings(false)}
                             className="absolute top-6 right-6 p-2 rounded-full glass-button text-[var(--app-text-soft)] hover:text-[var(--app-text)] transition-colors"
@@ -630,21 +608,6 @@ export default function App() {
                                         className={`absolute top-1 left-1 size-8 rounded-full transition-transform duration-300 bg-[var(--app-text)] shadow-md ${theme === "dark" ? "translate-x-6" : "translate-x-0"}`}
                                     />
                                 </button>
-                            </div>
-                            
-                            <div className="flex flex-col gap-3 glass-input p-4 rounded-2xl">
-                                <span className="font-semibold text-lg">Цвет акцента</span>
-                                <div className="flex flex-wrap gap-3 mt-1">
-                                    {ACCENT_COLORS.map(c => (
-                                        <button
-                                            key={c.value}
-                                            onClick={() => setAccent(c.value)}
-                                            className={`size-8 rounded-full shadow-md transition-all border-2 ${accent === c.value ? "scale-125 border-[var(--app-text)]" : "border-transparent hover:scale-110"}`}
-                                            style={{ backgroundColor: c.value }}
-                                            title={c.name}
-                                        />
-                                    ))}
-                                </div>
                             </div>
                             
                             <div className="flex items-center justify-between glass-input p-4 rounded-2xl">

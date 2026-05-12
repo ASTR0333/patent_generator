@@ -8,10 +8,10 @@ export function FileUpload({
 }) {
     return (
         <label
-            className="glass-panel flex flex-1 flex-col gap-2 rounded-[2rem] border-2 border-dashed p-6 border-[var(--app-border-strong)] cursor-pointer transition-all hover:bg-[var(--app-surface-strong)] hover:border-[var(--app-tooltip)] group shadow-sm"
+            className="glass-panel flex flex-1 flex-col gap-2 rounded-2xl border-2 border-dashed p-6 border-[var(--app-border-strong)] cursor-pointer transition-all hover:bg-[var(--app-surface-strong)] hover:border-[var(--app-tooltip)] group shadow-sm"
         >
             <div className="flex items-center gap-3">
-                <div className="bg-[var(--app-surface-strong)] p-3 rounded-2xl text-[var(--app-icon)] group-hover:bg-[var(--app-tooltip)] group-hover:text-white transition-colors shadow-sm">
+                <div className="bg-[var(--app-surface-strong)] p-3 rounded-2xl text-[var(--app-icon)] group-hover:bg-[var(--app-tooltip)] group-hover:text-[var(--app-bg)] transition-colors shadow-sm">
                     <Icon size={28} />
                 </div>
                 <span className="font-extrabold tracking-tight text-lg text-[var(--app-text)]">{label}</span>
